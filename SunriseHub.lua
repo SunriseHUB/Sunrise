@@ -1952,7 +1952,7 @@ do
         Color = Color3.fromRGB(138, 128, 255),
         ZIndex = 3,
         Transparency = 1,
-        Text = "Sunrise",
+        Text = "SunriseHUB",
         Center = true,
         Outline = true,
     })
