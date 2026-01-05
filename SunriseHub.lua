@@ -2288,7 +2288,41 @@ varsglobal.visuals.OldFov = Camera.FieldOfView
 varsglobal.visuals.ZoomAmt = varsglobal.visuals.OldFov
 varsglobal.visuals.FovZoom = false
 
-	
+-- =====================================
+-- PERFECT ZOOM FIX (NO CAMERA SHAKE)
+-- Trident Survival v5
+-- =====================================
+
+varsglobal = varsglobal or {}
+varsglobal.visuals = varsglobal.visuals or {}
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+
+local LocalPlayer = Players.LocalPlayer
+
+-- SETTINGS
+varsglobal.visuals.OldFov = Camera.FieldOfView
+varsglobal.visuals.ZoomAmt = Camera.FieldOfView
+varsglobal.visuals.FovZoom = false
+varsglobal.visuals.SmoothSpeed = 0.18
+
+local currentFov = Camera.FieldOfView
+local originalCameraType = Camera.CameraType
+local originalSubject
+
+-- ===== UPDATE LOOP =====
+RunService.RenderStepped:Connect(function()
+    local targetFov = varsglobal.visuals.FovZoom
+        and varsglobal.visuals.ZoomAmt
+        or varsglobal.visuals.OldFov
+
+    currentFov += (targetFov - currentFov) * varsglobal.visuals.SmoothSpeed
+    Camera.FieldOfView = currentFov
+end)
+
+-- ===== KEYBIND =====
 WorldTab:AddLabel('zoom bind'):AddKeyPicker('zoombind', {
     Default = 'None',
     SyncToggleState = false,
@@ -2299,9 +2333,16 @@ WorldTab:AddLabel('zoom bind'):AddKeyPicker('zoombind', {
         varsglobal.visuals.FovZoom = state
 
         if state then
-            Camera.FieldOfView = varsglobal.visuals.ZoomAmt
+            -- SAVE
+            originalCameraType = Camera.CameraType
+            originalSubject = Camera.CameraSubject
+
+            -- LOCK CAMERA (NO SHAKE)
+            Camera.CameraType = Enum.CameraType.Scriptable
         else
-            Camera.FieldOfView = varsglobal.visuals.OldFov
+            -- RESTORE
+            Camera.CameraType = originalCameraType
+            Camera.CameraSubject = originalSubject
         end
     end,
 })
@@ -2316,12 +2357,8 @@ WorldTab:AddSlider('zoomslider', {
     Compact = false,
 }):OnChanged(function(value)
     varsglobal.visuals.ZoomAmt = value
-
-    -- если зум уже включён — обновляем сразу
-    if varsglobal.visuals.FovZoom then
-        Camera.FieldOfView = value
-    end
 end)
+
 
     
      local enabled, dynamic = false, false;
