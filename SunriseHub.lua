@@ -1206,118 +1206,71 @@ local function get_closest_target(usefov, fov_size)
     end)()
     return part, spos
 end
--- Magic Bullet --
-do
-    local magicsize, domagic, magicsee, snapline = 0.5, false, false, false
-    local fov, fov_show, fov_color, fov_outline, fov_size, fov_line = false, false, Color3.new(1, 1, 1), false, 100, Color3.new(1,1,1)
+-- =====================================
+-- MAGIC BULLETS FIXED
+-- Trident Survival v5
+-- =====================================
 
-    local CircleOutline = cheat.utility.new_drawing("Circle", {
-        Thickness = 3,
-        Color = Color3.new(),
-        ZIndex = 1
-    })
-    local CircleInline = cheat.utility.new_drawing("Circle", {
-        Transparency = 1,
-        Thickness = 1,
-        ZIndex = 2
-    })
-    local snaplinedrawing = cheat.utility.new_drawing("Line", {
-        Transparency = 1,
-        Thickness = 1,
-        ZIndex = 1,
-        Color = Color3.new(1, 1, 1),
-        Visible = false
-    })
-    local function update_fov()
-        CircleInline.Radius = fov_size
-        CircleInline.Color = fov_color
-        CircleInline.Visible = fov and fov_show
-        CircleOutline.Radius = fov_size
-        CircleOutline.Visible = (fov and fov_show and fov_outline)
-        snaplinedrawing.Color = fov_line
-    end
-    local function find_special(_v)
-        if not _v then return end
-        for i, v in _v:GetChildren() do if v.Name == "Head" and v.Material == Enum.Material.Neon then
-            return v
-        end end
-        local new_instance = Instance.new("Part")
-        new_instance.Parent = _v
-        new_instance.Name = "Head"
-        new_instance.Anchored = true
-        new_instance.Material = Enum.Material.Neon
-        new_instance.CollisionGroup = "Players"
-        new_instance.Transparency = 1
-        new_instance.Size = _Vector3new(5, 1, 5)
-        return new_instance
-    end
+local Players = game:GetService("Players")
+local Camera = workspace.CurrentCamera
 
-    local magicbullet = ui.box.aimbot:AddTab("player redirection")
-    magicbullet:AddToggle('aimbot_ultraexploit',{Text = 'player redirection',Default = false,Callback = function(v)
-        domagic = v
-    end}):AddKeyPicker('aimbot_ultraexploit_bind', {Default = 'None',SyncToggleState = true,Mode = 'Toggle',Text = 'player redirection',NoUI = false})
-    magicbullet:AddToggle('aimbot_ultraexploit_snapline', {Text = 'snapline to target',Default = false,Callback = function(Value)
-        snapline = Value
-    end}):AddColorPicker('aimbot_fov_line',{Default = Color3.new(1, 1, 1),Title = 'fov line color',Transparency = 0,Callback = function(Value)
-        fov_line = Value; update_fov()
-    end})
-    magicbullet:AddToggle('aimbot_fov', {Text = 'use fov',Default = false,Callback = function(Value)
-        fov = Value; update_fov()
-    end})
-    local Depbox1 = magicbullet:AddDependencyBox();
-    Depbox1:AddToggle('aimbot_fov_show', {Text = 'show fov',Default = false,Callback = function(Value)
-        fov_show = Value; update_fov()
-    end}):AddColorPicker('aimbot_fov_color',{Default = Color3.new(1, 1, 1),Title = 'fov color',Transparency = 0,Callback = function(Value)
-        fov_color = Value; update_fov()
-    end})
-    Depbox1:AddToggle('aimbot_fov_outline', {Text = 'fov outline',Default = false,Callback = function(Value)
-        fov_outline = Value; update_fov()
-    end})
-    Depbox1:AddSlider('aimbot_fov_size',{Text = 'target fov',Default = 100,Min = 10,Max = 1000,Rounding = 0,Compact = true,Callback = function(State)
-        fov_size = State; update_fov()
-    end})
-    local target, spos, cachedtarget;
-    cheat.utility.new_renderstepped(function()
-        if not cachedtarget then
-            target, spos = get_closest_target(fov, fov_size)
-        end
-        if target and spos then
-            snaplinedrawing.Visible = snapline
-            snaplinedrawing.From = _Vector2new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-            snaplinedrawing.To = spos
-        else
-            snaplinedrawing.Visible = false
-        end
-        CircleOutline.Position = _Vector2new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-        CircleInline.Position = _Vector2new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-    end)
-    do
-        local function addtovc(obj)
-            if not obj then return end
-            if not obj:FindFirstChild("whiz") then return end
-            if not domagic then return end
-            local confirmed = false
-            obj:GetPropertyChangedSignal("CFrame"):Connect(function()
-                if not confirmed and (Camera.CFrame.p - obj.CFrame.p).Magnitude < 1 then
-                    confirmed = true
+local LocalPlayer = Players.LocalPlayer
+local OldRaycast
+
+-- SETTINGS
+local MagicEnabled = false
+local UseFov = true
+local FovRadius = 100
+
+-- UI TOGGLE (используй свой)
+-- MagicEnabled = true / false
+
+-- ===== TARGET SELECT =====
+local function GetTarget()
+    local closest, dist = nil, math.huge
+    local mousePos = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character then
+            local head = plr.Character:FindFirstChild("Head")
+            local hum = plr.Character:FindFirstChild("Humanoid")
+            if head and hum and hum.Health > 0 then
+                local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                if onScreen then
+                    local mag = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                    if mag < dist and (not UseFov or mag <= FovRadius) then
+                        closest = head
+                        dist = mag
+                    end
                 end
-                if confirmed and (cachedtarget or target) then
-                    if not cachedtarget then cachedtarget = target end
-                    --local magicpart = find_special(cachedtarget.Parent)
-                    local bulletpos = obj.CFrame.Position
-                    --magicpart.Position = _Vector3new(bulletpos.X, cachedtarget.Position.Y + 4, bulletpos.Z)
-                    cachedtarget.Parent.PrimaryPart.CFrame = _CFramenew(_Vector3new(bulletpos.X, cachedtarget.Position.Y, bulletpos.Z))
-                end
-            end)
-            cheat.utility.new_heartbeat(function()
-                if not obj or not obj.Parent then
-                    cachedtarget = false
-                end
-            end)
+            end
         end
-        workspace.Const.Ignore.ChildAdded:Connect(addtovc);
     end
+    return closest
 end
+
+-- ===== RAYCAST HOOK =====
+OldRaycast = hookmetamethod(game, "__namecall", function(self, ...)
+    local method = getnamecallmethod()
+    local args = {...}
+
+    if MagicEnabled
+        and method == "Raycast"
+        and self == workspace
+        and args[2] then
+
+        local target = GetTarget()
+        if target then
+            local origin = args[1]
+            local direction = (target.Position - origin).Unit * args[2].Magnitude
+            args[2] = direction
+            return OldRaycast(self, unpack(args))
+        end
+    end
+
+    return OldRaycast(self, ...)
+end)
+
 -- Hitbox --
 do
     local hbc, original_size, hbsize = nil, trident.original_model.Head.Size, _Vector3new(0.5, 1, 0.5)
