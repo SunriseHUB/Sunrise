@@ -2277,31 +2277,52 @@ do
         end
     end);
     end
-    WorldTab:AddLabel('zoom bind'):AddKeyPicker('zoombind', {
-        Default = 'None',
-        SyncToggleState = false,
-        Mode = 'Toggle',
-        Text = 'zoom onto thing',
-        NoUI = false,
-        Callback = function(first)
-            varsglobal.visuals.FovZoom = first
-            if first then
-                workspace.CurrentCamera.FieldOfView = varsglobal.visuals.ZoomAmt
-            else
-                workspace.CurrentCamera.FieldOfView = varsglobal.visuals.OldFov
-            end
-        end,
-    })
-    WorldTab:AddSlider('zoomslider', {
-        Text = 'zoom slider',
-        Default = varsglobal.visuals.OldFov - 30,
-        Min = 0,
-        Max = 120,
-        Rounding = 0,
-        Compact = false,
-    }):OnChanged(function(State)
-        varsglobal.visuals.ZoomAmt = State
-    end)
+
+varsglobal = varsglobal or {}
+varsglobal.visuals = varsglobal.visuals or {}
+
+local Camera = workspace.CurrentCamera
+
+
+varsglobal.visuals.OldFov = Camera.FieldOfView
+varsglobal.visuals.ZoomAmt = varsglobal.visuals.OldFov
+varsglobal.visuals.FovZoom = false
+
+	
+WorldTab:AddLabel('zoom bind'):AddKeyPicker('zoombind', {
+    Default = 'None',
+    SyncToggleState = false,
+    Mode = 'Toggle',
+    Text = 'Zoom',
+    NoUI = false,
+    Callback = function(state)
+        varsglobal.visuals.FovZoom = state
+
+        if state then
+            Camera.FieldOfView = varsglobal.visuals.ZoomAmt
+        else
+            Camera.FieldOfView = varsglobal.visuals.OldFov
+        end
+    end,
+})
+
+-- ===== SLIDER =====
+WorldTab:AddSlider('zoomslider', {
+    Text = 'Zoom FOV',
+    Default = varsglobal.visuals.OldFov,
+    Min = 0,
+    Max = 120,
+    Rounding = 0,
+    Compact = false,
+}):OnChanged(function(value)
+    varsglobal.visuals.ZoomAmt = value
+
+    -- если зум уже включён — обновляем сразу
+    if varsglobal.visuals.FovZoom then
+        Camera.FieldOfView = value
+    end
+end)
+
     
      local enabled, dynamic = false, false;
     local color1, color2 = Color3.new(1,1,1), Color3.new();
