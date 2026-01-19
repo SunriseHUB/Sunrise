@@ -2001,7 +2001,7 @@ do
     local function RAD2DEG(x) return x * 180 / math_pi end
     cheat.utility.new_renderstepped(LPH_NO_VIRTUALIZE(function(delta)
 if transp <=  -0.000001 then
-            trasnp = 0
+            trasnp = 0.000001
         end
 
 		if cursor.Enabled then
