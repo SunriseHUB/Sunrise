@@ -1537,7 +1537,7 @@ do
         Text = 'box fill',
         Default = false,
         Callback = function(first)
-            es.box_fill = first
+            es.box_fill = first + 0.000001
             cheat.EspLibrary.icaca()
         end
     }):AddColorPicker('espboxfillcolor',
