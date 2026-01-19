@@ -2000,7 +2000,11 @@ do
     local function DEG2RAD(x) return x * math_pi / 180 end
     local function RAD2DEG(x) return x * 180 / math_pi end
     cheat.utility.new_renderstepped(LPH_NO_VIRTUALIZE(function(delta)
-        if cursor.Enabled then
+if transp <=  -0.000001 then
+            trasnp = 0
+        end
+
+		if cursor.Enabled then
             rainbow = rainbow + (delta * 0.5)
             if rainbow > 1.0 then rainbow = 0.0 end
             color = Color3.fromHSV(rainbow, 1, 1)
