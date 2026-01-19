@@ -2431,7 +2431,7 @@ end)
         Size = Vector2.new(text.TextBounds.X + 6, text.TextBounds.Y + 6),
         Color = Color3.new(0,0,0),
         Filled = true,
-        Thickness = 0,
+        Thickness = 0.000001,
     });
     local hue1, hue2, fpstimer, fps, finalfps = 0, 0.15, tick(), 0, 60;
     cheat.utility.new_renderstepped(LPH_JIT_MAX(function(delta)
