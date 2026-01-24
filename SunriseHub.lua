@@ -2486,6 +2486,7 @@ do
             game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
         end
     end)
+	--[[
     do
         TextChatService = game:GetService("TextChatService")
         isLegacyChat = TextChatService.ChatVersion == Enum.ChatVersion.LegacyChatService
@@ -2501,7 +2502,7 @@ do
             chatMessage(word)
         end, 25, 100)
     end
-
+	]]
 end
 -- Speed Hack --
 do 
