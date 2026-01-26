@@ -797,21 +797,26 @@ cheat.EspLibrary = {}; LPH_NO_VIRTUALIZE(function()
     end
     local function identify_weapon(model)
         if model then
-            local handle =  _FindFirstChild(model, "Handle") or model.PrimaryPart
             if not _IsA(model,"Model") then return "unknown" end
             if not model.PrimaryPart then return "unknown" end
             local models = game:GetService("ReplicatedStorage").HandModels
-            if handle and model.PrimaryPart == handle then
-                for i, m in pairs(models:GetChildren()) do
-                    if m and _FindFirstChild(m,"Handle") and _IsA(m.Handle,"MeshPart") then
-                        if handle.Color == m.Handle.Color then
-                            return tostring(m.Name)
-                        end
+			local function getchildren(ob)
+				for i,v in pairs(v:GetChildren()  do
+					if v ~= null then
+						return v
+					end
+				end
+			end
+        	for i, m in pairs(models:GetChildren()) do
+                if m and _FindFirstChild(m,"Handle") and _IsA(m.Handle,"MeshPart") then
+                    if getchildren(m) == getchildren(model) then
+                        return tostring(m.Name)
                     end
                 end
-            else
-                return "unknown"
             end
+            
+            return "unknown"
+            
         else
             return "unknown"
         end
